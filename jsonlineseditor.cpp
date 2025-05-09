@@ -60,6 +60,8 @@ JsonLinesEditor::JsonLinesEditor(QWidget *parent)
 
         QAction* actionCloseFile = findChild<QAction*>("actionCloseFile");
         actionCloseFile->setEnabled(!openedFile.isEmpty());
+        ui->toolButton_AddRow->setEnabled(!openedFile.isEmpty());
+
 
         this->openedFileChanged(openedFile);
     });
@@ -257,7 +259,6 @@ void JsonLinesEditor::openedFileChanged(const QString &filePath)
         ui->tableWidgetFile->horizontalHeader()->setStretchLastSection(true);
 
 
-        this->enableEditor();
         ui->tableWidgetFile->setEnabled(true);
         this->setIsFileChanged(false);
     }
@@ -276,7 +277,7 @@ bool JsonLinesEditor::checkForExit()
             return true;
         }
 
-        this->journalMessage("Cancel exiting without saving data");
+        this->journalMessage("Cancel exiting program without saving data");
         return false;
     }
     return true;
@@ -357,6 +358,11 @@ void JsonLinesEditor::on_tableWidgetFile_itemSelectionChanged()
         ui->plainTextEditDefinitionOrig->setPlainText(items.at(3)->text());
         ui->lineEditSource->setText(items.at(4)->text());
 
+        ui->toolButton_RemoveRow->setEnabled(true);
+        this->enableEditor();
+    } else {
+        ui->toolButton_RemoveRow->setEnabled(false);
+        this->disableEditor();
     }
 }
 
@@ -365,7 +371,6 @@ void JsonLinesEditor::on_toolButton_TermSearchGoogle_clicked()
 {
     if (!ui->lineEditTerm->text().trimmed().isEmpty()) {
         QDesktopServices::openUrl(QUrl(QString("https://google.com/search?q=\"%1\"&lr=lang_ru").arg(ui->lineEditTerm->text())));
-
     }
 }
 
@@ -638,11 +643,27 @@ bool JsonLinesEditor::saveFile(bool saveAs)
     for (int row = 0; row < rows; row++) {
         QJsonObject obj;
 
-        obj.insert("term", ui->tableWidgetFile->item(row, 0)->text());
-        obj.insert("original_term", ui->tableWidgetFile->item(row, 1)->text());
-        obj.insert("definition", ui->tableWidgetFile->item(row, 2)->text());
-        obj.insert("original_definition", ui->tableWidgetFile->item(row, 3)->text());
-        obj.insert("source", ui->tableWidgetFile->item(row, 4)->text());
+        QString strTerm = ui->tableWidgetFile->item(row, 0)->text().trimmed();
+        QString strTermOrig = ui->tableWidgetFile->item(row, 1)->text().trimmed();
+        QString strDefinition = ui->tableWidgetFile->item(row, 2)->text().trimmed();
+        QString strDefinitionOrig = ui->tableWidgetFile->item(row, 3)->text().trimmed();
+        QString strSource = ui->tableWidgetFile->item(row, 4)->text().trimmed();
+
+
+        // Skip empty
+        if (strTerm.isEmpty() &&
+                strTermOrig.isEmpty() &&
+                strDefinition.isEmpty() &&
+                strDefinitionOrig.isEmpty() &&
+                strSource.isEmpty()) {
+            continue;
+        }
+
+        obj.insert("term", strTerm);
+        obj.insert("original_term", strTermOrig);
+        obj.insert("definition", strDefinition);
+        obj.insert("original_definition", strDefinitionOrig);
+        obj.insert("source", strSource);
 
         QJsonDocument doc(obj);
 
@@ -786,5 +807,37 @@ void JsonLinesEditor::on_actionSaveAs_triggered()
 void JsonLinesEditor::on_actionCreate_triggered()
 {
     this->setOpenedFile(defaultFileUnsaved);
+}
+
+
+void JsonLinesEditor::on_toolButton_AddRow_clicked()
+{
+    int rowCount = ui->tableWidgetFile->rowCount();
+    ui->tableWidgetFile->insertRow(rowCount);
+
+    QTableWidgetItem *itemTerm = new QTableWidgetItem();
+    QTableWidgetItem *itemTermOrigin = new QTableWidgetItem();
+    QTableWidgetItem *itemDefinition = new QTableWidgetItem();
+    QTableWidgetItem *itemDefinitionOrigin = new QTableWidgetItem();
+    QTableWidgetItem *itemSource = new QTableWidgetItem();
+
+
+    ui->tableWidgetFile->setItem(rowCount, 0,itemTerm);
+    ui->tableWidgetFile->setItem(rowCount, 1,itemTermOrigin);
+    ui->tableWidgetFile->setItem(rowCount, 2,itemDefinition);
+    ui->tableWidgetFile->setItem(rowCount, 3,itemDefinitionOrigin);
+    ui->tableWidgetFile->setItem(rowCount, 4,itemSource);
+    this->journalMessage(QString("Added row"));
+}
+
+
+
+void JsonLinesEditor::on_toolButton_RemoveRow_clicked()
+{
+    QModelIndex index = ui->tableWidgetFile->selectionModel()->currentIndex();
+    if(ui->tableWidgetFile->item(index.row(), 0)) {
+        this->journalMessage(QString("Removed row: %1").arg(ui->tableWidgetFile->item(index.row(), 0)->text()));
+        ui->tableWidgetFile->removeRow(index.row());
+    }
 }
 

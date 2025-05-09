@@ -75,6 +75,10 @@ private slots:
 
     void on_actionCreate_triggered();
 
+    void on_toolButton_AddRow_clicked();
+
+    void on_toolButton_RemoveRow_clicked();
+
 signals:
     void isFileChangedUpdated(bool);
     void isItemChangedUpdated(bool);
