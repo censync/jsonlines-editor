@@ -832,7 +832,6 @@ void JsonLinesEditor::on_toolButton_AddRow_clicked()
     ui->tableWidgetFile->setItem(rowCount, 3,itemDefinitionOrigin);
     ui->tableWidgetFile->setItem(rowCount, 4,itemSource);
     this->journalMessage(QString("Added row"));
-
     ui->tableWidgetFile->scrollToItem(itemTerm);
 
 }
