@@ -543,6 +543,7 @@ void JsonLinesEditor::on_toolButtonSaveItem_clicked()
 
         this->rowsUpdated++;
         this->journalMessage(QString("Updated row: \"%1\" / \"%2\"").arg(strTerm, strTermOrig));
+        ui->tableWidgetFile->scrollToItem(items.at(0));
     } else {
         // Insert
         int rowCount = ui->tableWidgetFile->rowCount();
@@ -568,6 +569,8 @@ void JsonLinesEditor::on_toolButtonSaveItem_clicked()
 
         this->rowsInserted++;
         this->journalMessage(QString("Insert row: \"%1\" / \"%2\"").arg(strTerm, strTermOrig));
+
+        ui->tableWidgetFile->scrollToItem(itemTerm);
     }
 
     ui->tableWidgetFile->resizeColumnToContents(0);
@@ -577,6 +580,7 @@ void JsonLinesEditor::on_toolButtonSaveItem_clicked()
     this->setIsFileChanged(true);
 
     this->setIsItemChanged(false);
+
 
     ui->toolButtonSaveItem->setEnabled(false);
 }
@@ -828,6 +832,9 @@ void JsonLinesEditor::on_toolButton_AddRow_clicked()
     ui->tableWidgetFile->setItem(rowCount, 3,itemDefinitionOrigin);
     ui->tableWidgetFile->setItem(rowCount, 4,itemSource);
     this->journalMessage(QString("Added row"));
+
+    ui->tableWidgetFile->scrollToItem(itemTerm);
+
 }
 
 
@@ -838,6 +845,7 @@ void JsonLinesEditor::on_toolButton_RemoveRow_clicked()
     if(ui->tableWidgetFile->item(index.row(), 0)) {
         this->journalMessage(QString("Removed row: %1").arg(ui->tableWidgetFile->item(index.row(), 0)->text()));
         ui->tableWidgetFile->removeRow(index.row());
+        this->setIsFileChanged(true);
     }
 }
 
